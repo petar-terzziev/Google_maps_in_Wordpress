@@ -22,17 +22,17 @@ function initMap() {
   // The map, centered at Uluru
   var map = new google.maps.Map(
       document.getElementById('map'), {zoom: 4, center: uluru});
-//create number of markers based on collection.length
-var markers=Array();
 
+var markers=Array();
             $.ajax({
                 type : 'POST',
                 url : 'test.php',
                 datatype: 'json',
                 success : function (d) {
-                 for(var i in d){
-                 markers[i]= new google.maps.Marker({
-            position: {lat: parseFloat(d[i][0]),lng: parseFloat(d[i][1])},
+                 for(i in d){
+                 	console.log(i);
+                 	markers[i]= new google.maps.Marker({
+            position: {lat: parseFloat(d[i][2]),lng: parseFloat(d[i][3])},
             map: map,
             title: "collection" 
     });
@@ -40,6 +40,7 @@ var markers=Array();
                 },
             
             });
+
 }
     </script>
     <!--Load the API from the specified URL
