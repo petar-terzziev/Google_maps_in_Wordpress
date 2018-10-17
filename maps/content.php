@@ -4,13 +4,13 @@
 <?php global $wpdb;
 $countries=$wpdb->get_results("select distinct country from wp_coordinates");
 $cur_country=$_POST['select_country'];
-$sql="select lat,lng from wp_coordinates where country=$cur_country";
+$sql='select lat,lng from wp_coordinates where country=\''.$cur_country.'\'';
 $coordinates=$wpdb->get_results($sql);
 ?> <?php the_content(); ?>
 
 </div>
   <head>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
     <style>
        /* Set the size of the div element that contains the map */
       #map {
@@ -25,10 +25,9 @@ $coordinates=$wpdb->get_results($sql);
      	<p>Choose country:</p>
 
 <form action="#" method="post">
-      <select name="select_country" id="select_country" onchange="initMap()">
-    <option value="null" selected>Select Country</option>
+      <select name="select_country" id="select_country" onchange="this.form.submit(); initMap(); document.getElementById('default_option').innerHTML='<?php echo $cur_country?>'">
+    <option value="null" id="default_option" selected>Select Country</option>
 </select>
-
 </form> 
 </div>
     <!--The div element for the map -->
@@ -56,8 +55,16 @@ function initMap() {
       document.getElementById('map'), {zoom: 4, center: uluru});
    var markers=Array();
             
-    var country='<?php json_encode($coordinates)?>';
-console.log(country);
+    var crds_str='<?php echo json_encode($coordinates)?>';
+    var crds=JSON.parse(crds_str);
+
+for(i in crds){
+    markers[i]= new google.maps.Marker({
+            position: {lat: parseFloat(crds[i]['lat']),lng: parseFloat(crds[i]['lng'])},
+            map: map,
+            title: "collection" 
+    });
+}
      
 }
 $(document).ready(load_countries());
