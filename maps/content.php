@@ -2,6 +2,15 @@
 	<h2 class="blog-post-title"><?php the_title(); ?></h2>
 	<p class="blog-post-meta"><?php the_date(); ?> by <a href="#"><?php the_author(); ?></a></p>
 <?php global $wpdb;
+  $asia=file_get_contents("https://data.opendatasoft.com/api/records/1.0/search/?dataset=geonames-all-cities-with-a-population-1000%40public&rows=10000&facet=timezone&facet=country&refine.timezone=Asia%2FShanghai");
+$asia_cities=json_decode($asia);
+foreach($asia_cities->records as $city){
+
+$sql=$wpdb->prepare("INSERT IGNORE  into wp_coordinates (recordid,lat,lng,country) values (%s,%d,%d,%s)",array($city->recordid,$city->fields->coordinates[0],$city->fields->coordinates[1],$city->fields->country));
+$wpdb->query($sql);
+}
+
+
 $countries=$wpdb->get_results("select distinct country from wp_coordinates");
 $cur_country=$_POST['select_country'];
 $sql='select lat,lng from wp_coordinates where country=\''.$cur_country.'\'';
@@ -10,6 +19,7 @@ $coordinates=$wpdb->get_results($sql);
 
 </div>
   <head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
     <style>
        /* Set the size of the div element that contains the map */
@@ -25,7 +35,7 @@ $coordinates=$wpdb->get_results($sql);
      	<p>Choose country:</p>
 
 <form action="#" method="post">
-      <select name="select_country" id="select_country" onchange="this.form.submit(); initMap(); document.getElementById('default_option').innerHTML='<?php echo $cur_country?>'">
+      <select name="select_country" id="select_country" onchange="this.form.submit(); initMap()">
     <option value="null" id="default_option" selected>Select Country</option>
 </select>
 </form> 
@@ -65,8 +75,12 @@ for(i in crds){
             title: "collection" 
     });
 }
-     
+if('<?php echo $cur_country?>'){
+document.getElementById('default_option').value='<?php echo $cur_country?>';
+
 }
+}
+
 $(document).ready(load_countries());
 
     </script>
