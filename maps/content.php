@@ -1,8 +1,12 @@
 <div class="blog-post">
 	<h2 class="blog-post-title"><?php the_title(); ?></h2>
 	<p class="blog-post-meta"><?php the_date(); ?> by <a href="#"><?php the_author(); ?></a></p>
-
- <?php the_content(); ?>
+<?php global $wpdb;
+$countries=$wpdb->get_results("select distinct country from wp_coordinates");
+$cur_country=$_POST['select_country'];
+$sql="select lat,lng from wp_coordinates where country=$cur_country";
+$coordinates=$wpdb->get_results($sql);
+?> <?php the_content(); ?>
 
 </div>
   <head>
@@ -19,9 +23,13 @@
      <h3>My Google Maps Demo</h3>
      <div>
      	<p>Choose country:</p>
+
+<form action="#" method="post">
       <select name="select_country" id="select_country" onchange="initMap()">
     <option value="null" selected>Select Country</option>
-</select> 
+</select>
+
+</form> 
 </div>
     <!--The div element for the map -->
     <div id="map"></div>
@@ -29,16 +37,14 @@
      <script>
      	function load_countries(){
      			var select_menu = document.getElementById("select_country");
-$.ajax({
-type:'POST',
-url: 'load_countries.php',
-datatype: 'json',
-success: function (d){
-
-console.log('okok');
-}
-});
-
+         var countries_string='<?php echo json_encode($countries)?>';
+         var countries =JSON.parse(countries_string);
+         for(i in countries){
+          var option = document.createElement("option");
+option.value=countries[i]['country'];
+option.text = countries[i]['country'];
+select_menu.add(option, select_menu[i+1]);
+         }
 
      	}
 // Initialize and add the map
@@ -49,26 +55,9 @@ function initMap() {
   var map = new google.maps.Map(
       document.getElementById('map'), {zoom: 4, center: uluru});
    var markers=Array();
-            $.ajax({
-                type : 'POST',
-                url : 'load_markers.php',
-                datatype: 'json',
-                data : {
-                	country: $('#select_country').val()
-
-                },
-                success : function (d) {
-
-                	for (i in d){
-                      markers[i]= new google.maps.Marker({
-            position: {lat: parseFloat(d[i][0]),lng: parseFloat(d[i][1])},
-            map: map,
-            title: "collection" 
-    });
-                 }
-                },
             
-});
+    var country='<?php json_encode($coordinates)?>';
+console.log(country);
      
 }
 $(document).ready(load_countries());
